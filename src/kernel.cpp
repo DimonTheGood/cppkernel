@@ -2,6 +2,8 @@
 #include "serial.hpp"
 #include "multiboot2.hpp"
 #include "frame_allocator.hpp"
+#include "gdt.hpp"
+
 #define MULTIBOOT2_HEADER_MAGIC 0xe85250d6
 
 struct multiboot_header {
@@ -34,7 +36,14 @@ extern "C" uint8_t _kernel_start;
 extern "C" uint8_t _kernel_end;
 
 extern "C" void kmain(uint32_t magic, uint32_t mbi_addr){
+    gdt_init();
     serial_init();
+    serial_write("gdt initialized\n");
+    uint16_t cs_value;
+    asm volatile("mov %%cs, %0" : "=r"(cs_value));
+    serial_write("cs = ");
+    serial_write_hex(cs_value);
+    serial_write("\n");
     constexpr uint32_t MULTIBOOT2_BOOTLOADER_MAGIC = 0x36D76289;
     if(magic != MULTIBOOT2_BOOTLOADER_MAGIC){
         serial_write("serial: Invalid magic number\n");
