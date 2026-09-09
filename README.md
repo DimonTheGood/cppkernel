@@ -39,7 +39,6 @@ Makefile
 
 ## Roadmap
 
-- [ ] **GDT** — a proper Global Descriptor Table, replacing GRUB's temporary one, laying groundwork for future user-mode segments.
 - [ ] **IDT + CPU exceptions** — interrupt descriptor table, exception handlers (division by zero, page fault, general protection fault, etc.).
 - [ ] **PIC + PIT timer** — remapping the interrupt controller, a programmable timer as the tick source for the future scheduler.
 - [ ] **Keyboard driver** — IRQ1 handling, scan code to character translation.
