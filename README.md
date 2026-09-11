@@ -11,6 +11,7 @@ A learning project: a 32-bit (i386) kernel written from scratch in C++ and assem
 - **Memory map.** Reading the physical memory map from GRUB, printing every region (address, length, type) over serial.
 - **Physical Frame Allocator.** Bitmap-based physical frame allocator (4KB frames): correct initialization marking available/reserved regions, protection against overflow when handling addresses above 4GB, `alloc_frame()` / `free_frame()`.
 - **Basic kernel library.** Freestanding implementations of `memset`, `memcpy`, `memmove`, `memcmp`, `strlen` — no libc dependency.
+- **Custom GDT.** A hand-built Global Descriptor Table (null, kernel code, kernel data — flat memory model), replacing GRUB's temporary one, loaded via `lgdt` with a proper segment register reload (`ljmp` + `mov`).
 
 ## Build & run
 
@@ -33,6 +34,7 @@ src/
   serial.hpp/.cpp    — COM1 driver
   frame_allocator.hpp/.cpp — bitmap physical frame allocator
   libc.hpp/.cpp      — freestanding kernel library
+  gdt.hpp/.cpp       — Global Descriptor Table
 linker.ld            — 32-bit ELF layout, section placement
 Makefile
 ```
