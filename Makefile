@@ -6,8 +6,8 @@ GRUB_MKRESCUE := grub-mkrescue
 CXXFLAGS := -m32 -ffreestanding -fno-exceptions -fno-rtti -nostdlib -fno-pic -fno-pie -fno-stack-protector -Wall -Wextra -O2
 LDFLAGS := -m elf_i386 -T linker.ld -nostdlib --no-dynamic-linker
 
-CPP_SRC := src/kernel.cpp src/serial.cpp src/frame_allocator.cpp src/libc.cpp src/gdt.cpp
-ASM_SRC := src/boot.S
+CPP_SRC := src/kernel.cpp src/serial.cpp src/frame_allocator.cpp src/libc.cpp src/gdt.cpp src/idt.cpp
+ASM_SRC := src/boot.S src/isr.S
 OBJ := $(CPP_SRC:.cpp=.o) $(ASM_SRC:.S=.o)
 ISO := kernel.iso
 

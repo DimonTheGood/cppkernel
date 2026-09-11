@@ -3,7 +3,7 @@
 #include "multiboot2.hpp"
 #include "frame_allocator.hpp"
 #include "gdt.hpp"
-
+#include "idt.hpp"
 #define MULTIBOOT2_HEADER_MAGIC 0xe85250d6
 
 struct multiboot_header {
@@ -37,8 +37,13 @@ extern "C" uint8_t _kernel_end;
 
 extern "C" void kmain(uint32_t magic, uint32_t mbi_addr){
     gdt_init();
+    idt_init();
     serial_init();
     serial_write("gdt initialized\n");
+    serial_write("idt initialized\n");
+    volatile int a = 10;
+    volatile int b = 0;
+    volatile int c = a / b;
     uint16_t cs_value;
     asm volatile("mov %%cs, %0" : "=r"(cs_value));
     serial_write("cs = ");
