@@ -12,6 +12,7 @@ A learning project: a 32-bit (i386) kernel written from scratch in C++ and assem
 - **Physical Frame Allocator.** Bitmap-based physical frame allocator (4KB frames): correct initialization marking available/reserved regions, protection against overflow when handling addresses above 4GB, `alloc_frame()` / `free_frame()`.
 - **Basic kernel library.** Freestanding implementations of `memset`, `memcpy`, `memmove`, `memcmp`, `strlen` — no libc dependency.
 - **Custom GDT.** A hand-built Global Descriptor Table (null, kernel code, kernel data — flat memory model), replacing GRUB's temporary one, loaded via `lgdt` with a proper segment register reload (`ljmp` + `mov`).
+- **Custom IDT — full 256-entry table.** All 32 CPU exception vectors wired up through generated ASM stubs (error-code and no-error-code variants) funneling into a single common dispatcher, which decodes the vector number off the stack and calls into a C++ handler. Remaining 224 vectors filled with a default handler so the table has no gaps. Verified live against a real division-by-zero fault (no more silent triple faults / QEMU resets on unhandled exceptions).
 
 ## Build & run
 
@@ -35,13 +36,23 @@ src/
   frame_allocator.hpp/.cpp — bitmap physical frame allocator
   libc.hpp/.cpp      — freestanding kernel library
   gdt.hpp/.cpp       — Global Descriptor Table
+  idt.hpp/.cpp       — Interrupt Descriptor Table, exception dispatcher
+  isr.S              — generated ISR stubs + common interrupt entry point
 linker.ld            — 32-bit ELF layout, section placement
 Makefile
 ```
 
 ## Roadmap
 
-- [ ] **IDT + CPU exceptions** — interrupt descriptor table, exception handlers (division by zero, page fault, general protection fault, etc.).
+- [x] **Boot & Multiboot2** — custom header, ASM bootstrap, magic number validation.
+- [x] **Serial (COM1) driver** — UART init, string and hex output.
+- [x] **VGA text mode output**
+- [x] **Multiboot2 info parsing** — tag traversal with bounds checking.
+- [x] **Memory map parsing** — reading and printing physical memory regions.
+- [x] **Physical Frame Allocator** — bitmap-based, 4KB frames.
+- [x] **Basic kernel library** — `memset`, `memcpy`, `memmove`, `memcmp`, `strlen`.
+- [x] **GDT** — a proper Global Descriptor Table, replacing GRUB's temporary one, laying groundwork for future user-mode segments.
+- [x] **IDT + CPU exceptions** — interrupt descriptor table, all 32 exception handlers via a common dispatcher, default handler for unused vectors.
 - [ ] **PIC + PIT timer** — remapping the interrupt controller, a programmable timer as the tick source for the future scheduler.
 - [ ] **Keyboard driver** — IRQ1 handling, scan code to character translation.
 - [ ] **Paging** — enabling virtual memory, page directory/tables built on top of the existing frame allocator.
