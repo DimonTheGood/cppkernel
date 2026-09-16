@@ -4,6 +4,8 @@
 #include "frame_allocator.hpp"
 #include "gdt.hpp"
 #include "idt.hpp"
+#include "pic.hpp"
+#include "pit.hpp"
 #define MULTIBOOT2_HEADER_MAGIC 0xe85250d6
 
 struct multiboot_header {
@@ -36,14 +38,20 @@ extern "C" uint8_t _kernel_start;
 extern "C" uint8_t _kernel_end;
 
 extern "C" void kmain(uint32_t magic, uint32_t mbi_addr){
+    serial_init();
     gdt_init();
     idt_init();
-    serial_init();
+    pic_remap();
+    pit_init();
+    serial_write("pit initialized\n");
+    serial_write("pic remapped\n");
     serial_write("gdt initialized\n");
     serial_write("idt initialized\n");
+    asm volatile("sti");
+    serial_write("interrupts enabled\n");
     volatile int a = 10;
     volatile int b = 0;
-    volatile int c = a / b;
+    //volatile int c = a / b;
     uint16_t cs_value;
     asm volatile("mov %%cs, %0" : "=r"(cs_value));
     serial_write("cs = ");
