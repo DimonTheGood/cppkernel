@@ -13,6 +13,7 @@ A learning project: a 32-bit (i386) kernel written from scratch in C++ and assem
 - **Basic kernel library.** Freestanding implementations of `memset`, `memcpy`, `memmove`, `memcmp`, `strlen` — no libc dependency.
 - **Custom GDT.** A hand-built Global Descriptor Table (null, kernel code, kernel data — flat memory model), replacing GRUB's temporary one, loaded via `lgdt` with a proper segment register reload (`ljmp` + `mov`).
 - **Custom IDT — full 256-entry table.** All 32 CPU exception vectors wired up through generated ASM stubs (error-code and no-error-code variants) funneling into a single common dispatcher, which decodes the vector number off the stack and calls into a C++ handler. Remaining 224 vectors filled with a default handler so the table has no gaps. Verified live against a real division-by-zero fault (no more silent triple faults / QEMU resets on unhandled exceptions).
+- **PIC remap + PIT timer.** The 8259 PIC is remapped so hardware IRQs land on vectors 32–47, clear of CPU exceptions. The PIT (channel 0) is programmed for a steady 100 Hz tick, wired into the IDT dispatcher on IRQ0 (vector 32) with proper End-Of-Interrupt handling — confirmed by a continuous, uninterrupted tick counter in the serial log.
 
 ## Build & run
 
@@ -38,6 +39,9 @@ src/
   gdt.hpp/.cpp       — Global Descriptor Table
   idt.hpp/.cpp       — Interrupt Descriptor Table, exception dispatcher
   isr.S              — generated ISR stubs + common interrupt entry point
+  ports.hpp/.cpp     — shared outb/inb port I/O primitives
+  pic.hpp/.cpp       — 8259 PIC remap
+  pit.hpp/.cpp       — 8253/8254 PIT (timer) configuration
 linker.ld            — 32-bit ELF layout, section placement
 Makefile
 ```
@@ -53,7 +57,7 @@ Makefile
 - [x] **Basic kernel library** — `memset`, `memcpy`, `memmove`, `memcmp`, `strlen`.
 - [x] **GDT** — a proper Global Descriptor Table, replacing GRUB's temporary one, laying groundwork for future user-mode segments.
 - [x] **IDT + CPU exceptions** — interrupt descriptor table, all 32 exception handlers via a common dispatcher, default handler for unused vectors.
-- [ ] **PIC + PIT timer** — remapping the interrupt controller, a programmable timer as the tick source for the future scheduler.
+- [x] **PIC + PIT timer** — remapped interrupt controller, a programmable timer as the tick source for the future scheduler.
 - [ ] **Keyboard driver** — IRQ1 handling, scan code to character translation.
 - [ ] **Paging** — enabling virtual memory, page directory/tables built on top of the existing frame allocator.
 - [ ] **Kernel heap** — `kmalloc`/`kfree` on top of paging.
