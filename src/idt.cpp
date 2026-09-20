@@ -3,15 +3,39 @@
 #include "ports.hpp"
 static IDTEntry entries[256];
 
+static const char scancode_to_ascii[128] = {
+    0, 27, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', '\b',
+    '\t', 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[', ']', '\n',
+    0, // left ctrl
+    'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', '\'', '`',
+    0, // left shift
+    '\\', 'z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.', '/',
+    0, // right shift
+    '*',
+    0, // left alt
+    ' ', // space
+    // остальное пока не используем — 0
+};
+
 extern "C" void isr_handler(int vector_number){
     if(vector_number == 32){
         static uint32_t tick_count = 0;
         ++tick_count;
-        serial_write("tick: ");
-        serial_write_hex(tick_count);
-        serial_write("\n");
+        //serial_write("tick: ");
+        //serial_write_hex(tick_count);
+        //serial_write("\n");
         outb(0x20, 0x20);  
         return; 
+    }
+    if(vector_number == 33){
+        uint8_t scan_code = inb(0x60);
+        if(scan_code & 0x80) { outb(0x20, 0x20); return; }
+        char ascii = scancode_to_ascii[scan_code];
+        if(ascii != 0){
+            serial_write_char(ascii);
+        }
+        outb(0x20, 0x20);
+        return;
     }
     serial_write("EXCEPTION: vector ");
     serial_write_hex(vector_number);
@@ -27,7 +51,7 @@ extern "C" void isr16(); extern "C" void isr17(); extern "C" void isr18(); exter
 extern "C" void isr20(); extern "C" void isr21(); extern "C" void isr22(); extern "C" void isr23();
 extern "C" void isr24(); extern "C" void isr25(); extern "C" void isr26(); extern "C" void isr27();
 extern "C" void isr28(); extern "C" void isr29(); extern "C" void isr30(); extern "C" void isr31();
-extern "C" void isr32();
+extern "C" void isr32(); extern "C" void isr33();
 extern "C" void isr_default();
 static uint32_t isr_addresses[32] = {
     reinterpret_cast<uint32_t>(isr0),  reinterpret_cast<uint32_t>(isr1),
@@ -64,6 +88,7 @@ void idt_init(){
         set_idt_entry(i, reinterpret_cast<uint32_t>(isr_default), 0x08, 0x8E);
     }
     set_idt_entry(32, reinterpret_cast<uint32_t>(isr32), 0x08, 0x8E);
+    set_idt_entry(33, reinterpret_cast<uint32_t>(isr33), 0x08, 0x8E);
     IDTPointer idt_ptr;
     idt_ptr.limit = sizeof(entries) - 1;
     idt_ptr.base = reinterpret_cast<uint32_t>(entries);

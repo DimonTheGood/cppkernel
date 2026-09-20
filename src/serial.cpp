@@ -17,7 +17,7 @@ static bool serial_can_transmit(){
     return (inb(COM1 + 5) & 0x20) != 0;
 }
 
-static void serial_write_char(char character){
+void serial_write_char(char character){
     while(!serial_can_transmit()){};
     outb(COM1, static_cast<uint8_t>(character));
 }

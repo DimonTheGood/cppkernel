@@ -21,6 +21,12 @@ isr32:
     push $32
     jmp isr_common_stub
 
+.global isr33
+isr33:
+    push $0
+    push $33
+    jmp isr_common_stub
+
 .macro ISR_NOERR num
 .global isr\num
 isr\num:
