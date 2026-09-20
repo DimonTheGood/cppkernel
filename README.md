@@ -14,6 +14,7 @@ A learning project: a 32-bit (i386) kernel written from scratch in C++ and assem
 - **Custom GDT.** A hand-built Global Descriptor Table (null, kernel code, kernel data — flat memory model), replacing GRUB's temporary one, loaded via `lgdt` with a proper segment register reload (`ljmp` + `mov`).
 - **Custom IDT — full 256-entry table.** All 32 CPU exception vectors wired up through generated ASM stubs (error-code and no-error-code variants) funneling into a single common dispatcher, which decodes the vector number off the stack and calls into a C++ handler. Remaining 224 vectors filled with a default handler so the table has no gaps. Verified live against a real division-by-zero fault (no more silent triple faults / QEMU resets on unhandled exceptions).
 - **PIC remap + PIT timer.** The 8259 PIC is remapped so hardware IRQs land on vectors 32–47, clear of CPU exceptions. The PIT (channel 0) is programmed for a steady 100 Hz tick, wired into the IDT dispatcher on IRQ0 (vector 32) with proper End-Of-Interrupt handling — confirmed by a continuous, uninterrupted tick counter in the serial log.
+- **Keyboard driver.** IRQ1 (vector 33) handler reading raw scan codes from the PS/2 data port, distinguishing make/break codes, and translating Set 1 scan codes to ASCII via a lookup table — confirmed live by typing directly into the serial console.
 
 ## Build & run
 
@@ -37,7 +38,7 @@ src/
   frame_allocator.hpp/.cpp — bitmap physical frame allocator
   libc.hpp/.cpp      — freestanding kernel library
   gdt.hpp/.cpp       — Global Descriptor Table
-  idt.hpp/.cpp       — Interrupt Descriptor Table, exception dispatcher
+  idt.hpp/.cpp       — Interrupt Descriptor Table, exception + IRQ dispatcher, keyboard scan code translation
   isr.S              — generated ISR stubs + common interrupt entry point
   ports.hpp/.cpp     — shared outb/inb port I/O primitives
   pic.hpp/.cpp       — 8259 PIC remap
@@ -58,7 +59,7 @@ Makefile
 - [x] **GDT** — a proper Global Descriptor Table, replacing GRUB's temporary one, laying groundwork for future user-mode segments.
 - [x] **IDT + CPU exceptions** — interrupt descriptor table, all 32 exception handlers via a common dispatcher, default handler for unused vectors.
 - [x] **PIC + PIT timer** — remapped interrupt controller, a programmable timer as the tick source for the future scheduler.
-- [ ] **Keyboard driver** — IRQ1 handling, scan code to character translation.
+- [x] **Keyboard driver** — IRQ1 handling, scan code to character translation.
 - [ ] **Paging** — enabling virtual memory, page directory/tables built on top of the existing frame allocator.
 - [ ] **Kernel heap** — `kmalloc`/`kfree` on top of paging.
 - [ ] **Threads / scheduler** — context switching driven by PIT ticks, round-robin.
