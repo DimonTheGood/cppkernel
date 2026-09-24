@@ -1,24 +1,28 @@
 #include "heap.hpp"
 #include "serial.hpp"
 
-static uint32_t heap_start;
+static PhysicalFrameAllocator* pfa_ptr;
 static uint32_t heap_current;
 static uint32_t heap_end;
 
-void heap_init(uint32_t start_addr, uint32_t size){
-    heap_start = start_addr;
-    heap_end = start_addr + size;
-    heap_current = start_addr;
+void heap_init(PhysicalFrameAllocator* allocator){
+    pfa_ptr = allocator;
+    heap_end = 0;
+    heap_current = 0;
+    serial_write("heap init\n");
 }
 
 void* kmalloc(uint32_t size){
     size = (size + 3) & ~3;
-    if(heap_current + size > heap_end){
-        return nullptr;
+    while(heap_current + size > heap_end){
+        uint32_t new_frame = pfa_ptr->alloc_frame();
+        if(new_frame == 0) return nullptr;
+        if(heap_end == 0) heap_current = new_frame;
+        heap_end = heap_current + 4096;
     }
-    uint32_t tmp_addr = heap_current;
-    heap_current = heap_current + size;
-    return reinterpret_cast<void*>(tmp_addr);
+    uint32_t addr = heap_current;
+    heap_current += size;
+    return reinterpret_cast<void*>(addr);
 }
 
 void kfree(void* ptr){

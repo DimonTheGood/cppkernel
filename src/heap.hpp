@@ -1,6 +1,7 @@
 #pragma once
 #include <cstdint>
+#include "frame_allocator.hpp"
 
-void heap_init(uint32_t start_addr, uint32_t size);
+void heap_init(PhysicalFrameAllocator* allocator);
 void* kmalloc(uint32_t size);
 void kfree(void* ptr);

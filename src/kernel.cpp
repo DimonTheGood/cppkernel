@@ -118,6 +118,11 @@ extern "C" void kmain(uint32_t magic, uint32_t mbi_addr){
             serial_write("frame allocator initialized\n");
             uint32_t f1 = pfa.alloc_frame();
             serial_write("allocated frame: "); serial_write_hex(f1); serial_write("\n");
+            heap_init(&pfa);
+            void* p1 = kmalloc(10);
+            void* p2 = kmalloc(20);
+            serial_write("p1 = "); serial_write_hex(reinterpret_cast<uint32_t>(p1)); serial_write("\n");
+            serial_write("p2 = "); serial_write_hex(reinterpret_cast<uint32_t>(p2)); serial_write("\n");
         }
         if(tag->type == MULTIBOOT2_TAG_TYPE_END){
             break;
@@ -134,13 +139,9 @@ extern "C" void kmain(uint32_t magic, uint32_t mbi_addr){
         cursor += aligned_size;
     }
     paging_init();
-    heap_init(0x00200000, 0x100000);
-    void* p1 = kmalloc(10);
-    void* p2 = kmalloc(20);
-    serial_write("p1 = "); serial_write_hex(reinterpret_cast<uint32_t>(p1)); serial_write("\n");
-    serial_write("p2 = "); serial_write_hex(reinterpret_cast<uint32_t>(p2)); serial_write("\n");
+    //heap_init(0x00200000, 0x100000);
     volatile uint16_t* vga = (volatile uint16_t*)0xB8000; // vga text 80x25
- 
+    
     for (int i = 0; i < 80 * 25; i++) {
         vga[i] = 0x0720;
     }
