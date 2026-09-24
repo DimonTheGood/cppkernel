@@ -6,6 +6,7 @@
 #include "idt.hpp"
 #include "pic.hpp"
 #include "pit.hpp"
+#include "paging.hpp"
 #define MULTIBOOT2_HEADER_MAGIC 0xe85250d6
 
 struct multiboot_header {
@@ -43,6 +44,7 @@ extern "C" void kmain(uint32_t magic, uint32_t mbi_addr){
     idt_init();
     pic_remap();
     pit_init();
+    paging_init();
     serial_write("pit initialized\n");
     serial_write("pic remapped\n");
     serial_write("gdt initialized\n");
