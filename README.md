@@ -15,6 +15,7 @@ A learning project: a 32-bit (i386) kernel written from scratch in C++ and assem
 - **Custom IDT — full 256-entry table.** All 32 CPU exception vectors wired up through generated ASM stubs (error-code and no-error-code variants) funneling into a single common dispatcher, which decodes the vector number off the stack and calls into a C++ handler. Remaining 224 vectors filled with a default handler so the table has no gaps. Verified live against a real division-by-zero fault (no more silent triple faults / QEMU resets on unhandled exceptions).
 - **PIC remap + PIT timer.** The 8259 PIC is remapped so hardware IRQs land on vectors 32–47, clear of CPU exceptions. The PIT (channel 0) is programmed for a steady 100 Hz tick, wired into the IDT dispatcher on IRQ0 (vector 32) with proper End-Of-Interrupt handling — confirmed by a continuous, uninterrupted tick counter in the serial log.
 - **Keyboard driver.** IRQ1 (vector 33) handler reading raw scan codes from the PS/2 data port, distinguishing make/break codes, and translating Set 1 scan codes to ASCII via a lookup table — confirmed live by typing directly into the serial console.
+- **Paging.** A two-level page directory / page table structure built on top of the existing frame allocator, identity-mapping the first 4MB of physical memory. `cr3` loaded with the page directory address, `cr0`'s PG bit enabled — verified live: the entire kernel (interrupts, timer, keyboard input) keeps running correctly with virtual memory active.
 
 ## Build & run
 
@@ -43,6 +44,7 @@ src/
   ports.hpp/.cpp     — shared outb/inb port I/O primitives
   pic.hpp/.cpp       — 8259 PIC remap
   pit.hpp/.cpp       — 8253/8254 PIT (timer) configuration
+  paging.hpp/.cpp    — page directory/table setup, identity mapping, paging enable
 linker.ld            — 32-bit ELF layout, section placement
 Makefile
 ```
@@ -60,7 +62,7 @@ Makefile
 - [x] **IDT + CPU exceptions** — interrupt descriptor table, all 32 exception handlers via a common dispatcher, default handler for unused vectors.
 - [x] **PIC + PIT timer** — remapped interrupt controller, a programmable timer as the tick source for the future scheduler.
 - [x] **Keyboard driver** — IRQ1 handling, scan code to character translation.
-- [ ] **Paging** — enabling virtual memory, page directory/tables built on top of the existing frame allocator.
+- [x] **Paging** — virtual memory enabled, two-level page tables built on top of the frame allocator, identity-mapped first 4MB.
 - [ ] **Kernel heap** — `kmalloc`/`kfree` on top of paging.
 - [ ] **Threads / scheduler** — context switching driven by PIT ticks, round-robin.
 - [ ] **Kernel shell** — an interactive demo shell exercising all implemented subsystems.
