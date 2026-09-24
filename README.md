@@ -16,6 +16,7 @@ A learning project: a 32-bit (i386) kernel written from scratch in C++ and assem
 - **PIC remap + PIT timer.** The 8259 PIC is remapped so hardware IRQs land on vectors 32–47, clear of CPU exceptions. The PIT (channel 0) is programmed for a steady 100 Hz tick, wired into the IDT dispatcher on IRQ0 (vector 32) with proper End-Of-Interrupt handling — confirmed by a continuous, uninterrupted tick counter in the serial log.
 - **Keyboard driver.** IRQ1 (vector 33) handler reading raw scan codes from the PS/2 data port, distinguishing make/break codes, and translating Set 1 scan codes to ASCII via a lookup table — confirmed live by typing directly into the serial console.
 - **Paging.** A two-level page directory / page table structure built on top of the existing frame allocator, identity-mapping the first 4MB of physical memory. `cr3` loaded with the page directory address, `cr0`'s PG bit enabled — verified live: the entire kernel (interrupts, timer, keyboard input) keeps running correctly with virtual memory active.
+- **Kernel heap.** A bump allocator (`kmalloc`/`kfree`) with 4-byte alignment, serving arbitrary-size allocations out of a reserved region. `kfree` is currently a no-op — freeing/reclamation is a known next step, along with tying the heap's region into the physical frame allocator instead of a fixed address.
 
 ## Build & run
 
@@ -45,6 +46,7 @@ src/
   pic.hpp/.cpp       — 8259 PIC remap
   pit.hpp/.cpp       — 8253/8254 PIT (timer) configuration
   paging.hpp/.cpp    — page directory/table setup, identity mapping, paging enable
+  heap.hpp/.cpp      — kmalloc/kfree bump allocator
 linker.ld            — 32-bit ELF layout, section placement
 Makefile
 ```
@@ -63,7 +65,7 @@ Makefile
 - [x] **PIC + PIT timer** — remapped interrupt controller, a programmable timer as the tick source for the future scheduler.
 - [x] **Keyboard driver** — IRQ1 handling, scan code to character translation.
 - [x] **Paging** — virtual memory enabled, two-level page tables built on top of the frame allocator, identity-mapped first 4MB.
-- [ ] **Kernel heap** — `kmalloc`/`kfree` on top of paging.
+- [x] **Kernel heap** — `kmalloc`/`kfree` bump allocator on top of paging (freeing + frame-allocator-backed growth still to come).
 - [ ] **Threads / scheduler** — context switching driven by PIT ticks, round-robin.
 - [ ] **Kernel shell** — an interactive demo shell exercising all implemented subsystems.
 
