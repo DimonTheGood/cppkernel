@@ -51,9 +51,6 @@ extern "C" void kmain(uint32_t magic, uint32_t mbi_addr){
     serial_write("idt initialized\n");
     asm volatile("sti");
     serial_write("interrupts enabled\n");
-    volatile int a = 10;
-    volatile int b = 0;
-    //volatile int c = a / b;
     uint16_t cs_value;
     asm volatile("mov %%cs, %0" : "=r"(cs_value));
     serial_write("cs = ");
@@ -155,5 +152,7 @@ extern "C" void kmain(uint32_t magic, uint32_t mbi_addr){
         vga[(row * 80) + col + i] = 0x0F00 | msg[i]; 
     }
 
-    for(;;);
+    for(;;){
+        asm volatile("hlt");
+    }
 }

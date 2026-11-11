@@ -3,7 +3,7 @@ LD := x86_64-linux-gnu-ld
 QEMU := qemu-system-x86_64
 GRUB_MKRESCUE := grub-mkrescue
 
-CXXFLAGS := -m32 -ffreestanding -fno-exceptions -fno-rtti -nostdlib -fno-pic -fno-pie -fno-stack-protector -Wall -Wextra -O2
+CXXFLAGS := -fno-asynchronous-unwind-tables -mgeneral-regs-only -m32 -ffreestanding -fno-exceptions -fno-rtti -nostdlib -fno-pic -fno-pie -fno-stack-protector -Wall -Wextra -O2
 LDFLAGS := -m elf_i386 -T linker.ld -nostdlib --no-dynamic-linker
 
 CPP_SRC := src/kernel.cpp src/serial.cpp src/frame_allocator.cpp src/libc.cpp src/gdt.cpp src/idt.cpp src/ports.cpp src/pic.cpp src/pit.cpp src/paging.cpp src/heap.cpp
