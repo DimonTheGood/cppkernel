@@ -14,5 +14,11 @@ struct IDTPointer{
     uint32_t base;
 } __attribute__((packed));
 
+struct Registers{
+    uint32_t edi, esi, ebp, esp_dummy, ebx, edx, ecx, eax;
+    uint32_t int_no, err_code;
+    uint32_t eip, cs, eflags;
+} __attribute__((packed));
+
 void set_idt_entry(int index, uint32_t handler_addr, uint16_t selector, uint8_t type_attr);
 void idt_init();

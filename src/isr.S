@@ -1,10 +1,9 @@
 .global isr_common_stub
 isr_common_stub:
     pusha
-    mov 32(%esp), %eax
-    push %eax
+    push %esp
     call isr_handler
-    add $4, %esp
+    mov %eax, %esp
     popa
     add $8, %esp
     iret
@@ -13,18 +12,6 @@ isr_common_stub:
 isr_default:
     push $0
     push $255
-    jmp isr_common_stub
-
-.global isr32
-isr32:
-    push $0
-    push $32
-    jmp isr_common_stub
-
-.global isr33
-isr33:
-    push $0
-    push $33
     jmp isr_common_stub
 
 .macro ISR_NOERR num
@@ -74,3 +61,20 @@ ISR_NOERR 28
 ISR_NOERR 29
 ISR_ERR   30
 ISR_NOERR 31
+
+ISR_NOERR 32
+ISR_NOERR 33
+ISR_NOERR 34
+ISR_NOERR 35
+ISR_NOERR 36
+ISR_NOERR 37
+ISR_NOERR 38
+ISR_NOERR 39
+ISR_NOERR 40
+ISR_NOERR 41
+ISR_NOERR 42
+ISR_NOERR 43
+ISR_NOERR 44
+ISR_NOERR 45
+ISR_NOERR 46
+ISR_NOERR 47
