@@ -1,6 +1,7 @@
 #include <cstdint>
 #include "serial.hpp"
 #include "ports.hpp"
+#include "sync.hpp"
 static constexpr uint16_t COM1 = 0x3F8;
 
 void serial_init() {
@@ -23,6 +24,7 @@ void serial_write_char(char character){
 }
 
 void serial_write(const char* message){
+    uint32_t flags = interrupts_save();
     while(*message != '\0'){
         if(*message == '\n'){
             serial_write_char('\r');
@@ -30,6 +32,7 @@ void serial_write(const char* message){
         serial_write_char(*message);
         ++message;
     }
+    interrupts_restore(flags);
 }
 
 void serial_write_hex(uint32_t value){
