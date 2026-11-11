@@ -77,6 +77,8 @@ extern "C" void kmain(uint32_t magic, uint32_t mbi_addr){
     const uint8_t* mbi_end = mbi_start + mbi->total_size;
 
     const uint8_t* cursor = mbi_start + sizeof(Multiboot2InfoHeader);
+    static PhysicalFrameAllocator pfa;
+    bool pfa_ready = false;
     while(cursor < mbi_end){
         const auto* tag = reinterpret_cast<const Multiboot2Tag*>(cursor);
         serial_write("serial: tag->type = ");
@@ -110,16 +112,11 @@ extern "C" void kmain(uint32_t magic, uint32_t mbi_addr){
                 entry_cursor += mmap_tag->entry_size;
                 ++entry_index;
             }
-            static PhysicalFrameAllocator pfa;
-            pfa.init(mmap_tag, reinterpret_cast<uint32_t>(&_kernel_start), reinterpret_cast<uint32_t>(&_kernel_end));
+            pfa.init(mmap_tag, reinterpret_cast<uint32_t>(&_kernel_start), reinterpret_cast<uint32_t>(&_kernel_end), mbi_addr, mbi->total_size);
+            pfa_ready = true;
             serial_write("frame allocator initialized\n");
             uint32_t f1 = pfa.alloc_frame();
             serial_write("allocated frame: "); serial_write_hex(f1); serial_write("\n");
-            heap_init(&pfa);
-            void* p1 = kmalloc(10);
-            void* p2 = kmalloc(20);
-            serial_write("p1 = "); serial_write_hex(reinterpret_cast<uint32_t>(p1)); serial_write("\n");
-            serial_write("p2 = "); serial_write_hex(reinterpret_cast<uint32_t>(p2)); serial_write("\n");
         }
         if(tag->type == MULTIBOOT2_TAG_TYPE_END){
             break;
@@ -135,8 +132,16 @@ extern "C" void kmain(uint32_t magic, uint32_t mbi_addr){
         }
         cursor += aligned_size;
     }
-    paging_init();
-    //heap_init(0x00200000, 0x100000);
+    if(!pfa_ready){
+        serial_write("PANIC: no memory map from bootloader\n");
+        for(;;){ asm volatile("cli; hlt"); }
+    }
+    paging_init(&pfa);
+    heap_init(&pfa);
+    void* p1 = kmalloc(10);
+    void* p2 = kmalloc(20);
+    serial_write("p1 = "); serial_write_hex(reinterpret_cast<uint32_t>(p1)); serial_write("\n");
+    serial_write("p2 = "); serial_write_hex(reinterpret_cast<uint32_t>(p2)); serial_write("\n");
     volatile uint16_t* vga = (volatile uint16_t*)0xB8000; // vga text 80x25
     
     for (int i = 0; i < 80 * 25; i++) {

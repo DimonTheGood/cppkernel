@@ -5,9 +5,10 @@
 
 class PhysicalFrameAllocator{
 public:
-    void init(const Multiboot2MemoryMapTag* mmap_tag, uint32_t kernel_start, uint32_t kernel_end);
+    void init(const Multiboot2MemoryMapTag* mmap_tag, uint32_t kernel_start, uint32_t kernel_end, uint32_t mbi_addr, uint32_t mbi_size);
     uint32_t alloc_frame();
     void free_frame(uint32_t addr);
+    uint32_t total_frames() const { return total_frames_; }
 private:
     void set_frame(uint32_t addr);
     void clear_frame(uint32_t addr);

@@ -1,5 +1,6 @@
 #pragma once
 #include <cstdint>
+#include "frame_allocator.hpp"
 
 struct PageTableEntry{
     uint32_t present : 1;
@@ -9,4 +10,8 @@ struct PageTableEntry{
     uint32_t frame_addr : 20;
 } __attribute__((packed));
 
-void paging_init();
+constexpr uint32_t KERNEL_HEAP_START = 0xD0000000;
+constexpr uint32_t KERNEL_HEAP_END = 0xF0000000;
+
+void paging_init(PhysicalFrameAllocator* allocator);
+bool map_page(uint32_t virt, uint32_t phys);

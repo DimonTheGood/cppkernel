@@ -30,8 +30,20 @@ void PhysicalFrameAllocator::mark_range(uint64_t addr, uint64_t len, bool used){
     if(end_addr > 0x100000000ULL){
         end_addr = 0x100000000ULL;
     }
-    uint32_t start_frame = static_cast<uint32_t>(addr / FRAME_SIZE);
-    uint32_t end_frame = static_cast<uint32_t>(end_addr / FRAME_SIZE);
+    uint64_t start_frame64;
+    uint64_t end_frame64;
+    if(used){
+        start_frame64 = addr / FRAME_SIZE;
+        end_frame64 = (end_addr + FRAME_SIZE - 1) / FRAME_SIZE;
+    } else {
+        start_frame64 = (addr + FRAME_SIZE - 1) / FRAME_SIZE;
+        end_frame64 = end_addr / FRAME_SIZE;
+    }
+    if(end_frame64 > total_frames_){
+        end_frame64 = total_frames_;
+    }
+    uint32_t start_frame = static_cast<uint32_t>(start_frame64);
+    uint32_t end_frame = static_cast<uint32_t>(end_frame64);
     for(uint32_t f = start_frame; f < end_frame; ++f){
         uint32_t frame_addr = f * FRAME_SIZE;
         if(used) set_frame(frame_addr);
@@ -39,24 +51,33 @@ void PhysicalFrameAllocator::mark_range(uint64_t addr, uint64_t len, bool used){
     }
 }
 
-void PhysicalFrameAllocator::init(const Multiboot2MemoryMapTag* mmap_tag, uint32_t kernel_start, uint32_t kernel_end){
+static uint32_t align_up(uint32_t value){
+    return (value + FRAME_SIZE - 1) & ~(FRAME_SIZE - 1);
+}
+
+void PhysicalFrameAllocator::init(const Multiboot2MemoryMapTag* mmap_tag, uint32_t kernel_start, uint32_t kernel_end, uint32_t mbi_addr, uint32_t mbi_size){
     uint64_t max_addr = 0;
     const uint8_t* entry_cursor = reinterpret_cast<const uint8_t*>(mmap_tag) + sizeof(Multiboot2MemoryMapTag);
     const uint8_t* entries_end = reinterpret_cast<const uint8_t*>(mmap_tag) + mmap_tag->tag.size;
     while(entry_cursor + mmap_tag->entry_size <= entries_end){
         const auto* entry = reinterpret_cast<const Multiboot2MemoryMapEntry*>(entry_cursor);
-        if(entry->addr + entry->len > max_addr){
+        if(entry->type == MULTIBOOT2_MEMORY_AVAILABLE && entry->addr + entry->len > max_addr){
             max_addr = entry->addr + entry->len;
         }
         entry_cursor += mmap_tag->entry_size;
     }
-    if(max_addr > 0xFFFFFFFF){
-        max_addr = 0xFFFFFFFF;
+    if(max_addr > 0x100000000ULL){
+        max_addr = 0x100000000ULL;
     }
     total_frames_ = static_cast<uint32_t>(max_addr / FRAME_SIZE);
     bitmap_size_bytes_ = (total_frames_ + 7) / 8;
 
-    bitmap_ = reinterpret_cast<uint8_t*>(kernel_end);
+    uint32_t bitmap_start = align_up(kernel_end);
+    uint32_t mbi_end = mbi_addr + mbi_size;
+    if(bitmap_start < mbi_end && mbi_addr < bitmap_start + bitmap_size_bytes_){
+        bitmap_start = align_up(mbi_end);
+    }
+    bitmap_ = reinterpret_cast<uint8_t*>(bitmap_start);
 
     memset(bitmap_, 0xFF, bitmap_size_bytes_);
 
@@ -70,7 +91,8 @@ void PhysicalFrameAllocator::init(const Multiboot2MemoryMapTag* mmap_tag, uint32
     }
     mark_range(0, 0x100000, true);                          
     mark_range(kernel_start, kernel_end - kernel_start, true); 
-    mark_range(reinterpret_cast<uint32_t>(bitmap_), bitmap_size_bytes_, true); 
+    mark_range(reinterpret_cast<uint32_t>(bitmap_), bitmap_size_bytes_, true);
+    mark_range(mbi_addr, mbi_size, true);
 }
 
 uint32_t PhysicalFrameAllocator::alloc_frame(){
