@@ -21,7 +21,7 @@ A learning project: a 32-bit (i386) kernel written from scratch in C++ and assem
 ## Build & run
 
 ```sh
-make          # builds kernel.iso
+make all      # builds kernel.iso
 make run      # builds (if needed) and runs it in QEMU
 ```
 
