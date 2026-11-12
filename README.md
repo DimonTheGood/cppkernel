@@ -33,20 +33,25 @@ Requirements: `x86_64-linux-gnu-g++`/`ld` with `-m32` support (`g++-multilib`/`g
 boot/
   grub.cfg          — bootloader configuration
 src/
-  boot.S             — ASM bootstrap, stack setup, jump into kmain
-  kernel.cpp         — entry point, Multiboot2 parsing, subsystem init
-  multiboot2.hpp     — Multiboot2 protocol structures and constants
-  serial.hpp/.cpp    — COM1 driver
-  frame_allocator.hpp/.cpp — bitmap physical frame allocator
-  libc.hpp/.cpp      — freestanding kernel library
-  gdt.hpp/.cpp       — Global Descriptor Table
-  idt.hpp/.cpp       — Interrupt Descriptor Table, exception + IRQ dispatcher, keyboard scan code translation
-  isr.S              — generated ISR stubs + common interrupt entry point
-  ports.hpp/.cpp     — shared outb/inb port I/O primitives
-  pic.hpp/.cpp       — 8259 PIC remap
-  pit.hpp/.cpp       — 8253/8254 PIT (timer) configuration
-  paging.hpp/.cpp    — page directory/table setup, identity mapping, paging enable
-  heap.hpp/.cpp      — kmalloc/kfree bump allocator
+  kernel.cpp                       — entry point, Multiboot2 parsing, subsystem init
+  boot/boot.S                      — ASM bootstrap, stack setup, jump into kmain
+  boot/multiboot2.hpp              — Multiboot2 protocol structures and constants
+  ports/ports.hpp/.cpp             — shared outb/inb port I/O primitives
+  serial/serial.hpp/.cpp           — COM1 driver
+  libc/libc.hpp/.cpp               — freestanding kernel library
+  gdt/gdt.hpp/.cpp                 — Global Descriptor Table
+  idt/idt.hpp/.cpp                 — Interrupt Descriptor Table, exception + IRQ dispatcher
+  idt/isr.S                        — ISR stubs + common interrupt entry point
+  pic/pic.hpp/.cpp                 — 8259 PIC remap
+  pit/pit.hpp/.cpp                 — 8253/8254 PIT (timer) configuration and tick counter
+  frame_allocator/frame_allocator.hpp/.cpp — bitmap physical frame allocator
+  paging/paging.hpp/.cpp           — page directory/table setup, identity mapping, paging enable
+  heap/heap.hpp/.cpp               — kmalloc/kfree free-list allocator, new/delete
+  sync/sync.hpp                    — interrupt-disabling critical sections
+  scheduler/scheduler.hpp/.cpp     — kernel threads, round-robin preemptive scheduler
+  keyboard/keyboard.hpp/.cpp       — PS/2 keyboard driver with ring buffer
+  console/console.hpp/.cpp         — VGA text console
+  shell/shell.hpp/.cpp             — command shell
 linker.ld            — 32-bit ELF layout, section placement
 Makefile
 ```
