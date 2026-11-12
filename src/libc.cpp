@@ -51,3 +51,11 @@ uint32_t strlen(const char* str){
     }
     return result;
 }
+
+int strcmp(const char* a, const char* b){
+    while(*a != '\0' && *a == *b){
+        a++;
+        b++;
+    }
+    return static_cast<uint8_t>(*a) - static_cast<uint8_t>(*b);
+}

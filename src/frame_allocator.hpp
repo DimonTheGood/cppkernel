@@ -9,6 +9,7 @@ public:
     uint32_t alloc_frame();
     void free_frame(uint32_t addr);
     uint32_t total_frames() const { return total_frames_; }
+    uint32_t free_frames();
 private:
     void set_frame(uint32_t addr);
     void clear_frame(uint32_t addr);

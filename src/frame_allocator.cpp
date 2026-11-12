@@ -51,6 +51,14 @@ void PhysicalFrameAllocator::mark_range(uint64_t addr, uint64_t len, bool used){
     }
 }
 
+uint32_t PhysicalFrameAllocator::free_frames(){
+    uint32_t result = 0;
+    for(uint32_t f = 0; f < total_frames_; ++f){
+        if(!test_frame(f * FRAME_SIZE)) ++result;
+    }
+    return result;
+}
+
 static uint32_t align_up(uint32_t value){
     return (value + FRAME_SIZE - 1) & ~(FRAME_SIZE - 1);
 }

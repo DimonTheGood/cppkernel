@@ -6,7 +6,7 @@ GRUB_MKRESCUE := grub-mkrescue
 CXXFLAGS := -fno-asynchronous-unwind-tables -mgeneral-regs-only -m32 -ffreestanding -fno-exceptions -fno-rtti -nostdlib -fno-pic -fno-pie -fno-stack-protector -Wall -Wextra -O2
 LDFLAGS := -m elf_i386 -T linker.ld -nostdlib --no-dynamic-linker
 
-CPP_SRC := src/kernel.cpp src/serial.cpp src/frame_allocator.cpp src/libc.cpp src/gdt.cpp src/idt.cpp src/ports.cpp src/pic.cpp src/pit.cpp src/paging.cpp src/heap.cpp src/scheduler.cpp src/keyboard.cpp src/console.cpp
+CPP_SRC := src/kernel.cpp src/serial.cpp src/frame_allocator.cpp src/libc.cpp src/gdt.cpp src/idt.cpp src/ports.cpp src/pic.cpp src/pit.cpp src/paging.cpp src/heap.cpp src/scheduler.cpp src/keyboard.cpp src/console.cpp src/shell.cpp
 ASM_SRC := src/boot.S src/isr.S
 OBJ := $(CPP_SRC:.cpp=.o) $(ASM_SRC:.S=.o)
 ISO := kernel.iso

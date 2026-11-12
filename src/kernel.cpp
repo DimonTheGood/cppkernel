@@ -9,8 +9,8 @@
 #include "paging.hpp"
 #include "heap.hpp"
 #include "console.hpp"
-#include "keyboard.hpp"
 #include "scheduler.hpp"
+#include "shell.hpp"
 #define MULTIBOOT2_HEADER_MAGIC 0xe85250d6
 
 struct multiboot_header {
@@ -41,43 +41,6 @@ static const struct multiboot_header_tag_end mb_end = {
 
 extern "C" uint8_t _kernel_start;
 extern "C" uint8_t _kernel_end;
-
-static volatile uint32_t spin_count = 0;
-
-static void run_counter(uint32_t delay_ms){
-    Thread* self = thread_current();
-    for(uint32_t i = 1; i <= 5; ++i){
-        serial_write("[");
-        serial_write(self->name);
-        serial_write("] step ");
-        serial_write_hex(i);
-        serial_write(", spin_count ");
-        serial_write_hex(spin_count);
-        serial_write("\n");
-
-        console_write(self->name);
-        console_write(": step ");
-        console_write_dec(i);
-        console_write("\n");
-        thread_sleep(delay_ms);
-    }
-}
-
-static void counter_a(){
-    run_counter(300);
-}
-
-static void counter_b(){
-    run_counter(500);
-}
-
-static void spinner(){
-    uint32_t end_tick = pit_ticks() + 3 * PIT_FREQUENCY;
-    while(static_cast<int32_t>(pit_ticks() - end_tick) < 0){
-        spin_count = spin_count + 1;
-    }
-    serial_write("[spinner] done\n");
-}
 
 extern "C" void kmain(uint32_t magic, uint32_t mbi_addr){
     serial_init();
@@ -191,14 +154,5 @@ extern "C" void kmain(uint32_t magic, uint32_t mbi_addr){
     console_set_color(VGA_COLOR_DEFAULT);
 
     scheduler_init();
-    thread_create("counter-a", counter_a);
-    thread_create("counter-b", counter_b);
-    thread_create("spinner", spinner);
-
-    for(;;){
-        char c = keyboard_read_char();
-        console_putc(c);
-        char text[2] = {c, '\0'};
-        serial_write(text);
-    }
+    shell_run(&pfa);
 }

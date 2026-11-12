@@ -66,8 +66,8 @@ Makefile
 - [x] **Keyboard driver** — IRQ1 handling, scan code to character translation.
 - [x] **Paging** — virtual memory enabled, two-level page tables built on top of the frame allocator, identity-mapped first 4MB.
 - [x] **Kernel heap** — `kmalloc`/`kfree` bump allocator on top of paging (freeing + frame-allocator-backed growth still to come).
-- [ ] **Threads / scheduler** — context switching driven by PIT ticks, round-robin.
-- [ ] **Kernel shell** — an interactive demo shell exercising all implemented subsystems.
+- [x] **Threads / scheduler** — context switching driven by PIT ticks, round-robin.
+- [x] **Kernel shell** — an interactive demo shell exercising all implemented subsystems.
 
 ## Why a 32-bit kernel
 
