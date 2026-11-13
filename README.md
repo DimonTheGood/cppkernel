@@ -8,7 +8,7 @@ Features: GDT/IDT, interrupts, PIC/PIT timer, physical frame allocator, paging, 
 
 ```sh
 sudo apt install git make g++ g++-multilib grub-common grub-pc-bin xorriso mtools qemu-system-x86
-git clone https://github.com/DimonTheGood/cppkernel.git
+git clone https://github.com/DimonTheGood/cppkernel
 cd cppkernel
 make run
 ```
